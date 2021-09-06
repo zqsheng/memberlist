@@ -92,6 +92,7 @@ func NewNetTransport(config *NetTransportConfig) (*NetTransport, error) {
 		// If the config port given was zero, use the first TCP listener
 		// to pick an available port and then apply that to everything
 		// else.
+		// 动态分配端口
 		if port == 0 {
 			port = tcpLn.Addr().(*net.TCPAddr).Port
 		}

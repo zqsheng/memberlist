@@ -321,8 +321,10 @@ func (m *Memberlist) packetListen() {
 	}
 }
 
+// ingest接待
 func (m *Memberlist) ingestPacket(buf []byte, from net.Addr, timestamp time.Time) {
 	// Check if encryption is enabled
+	// 解码
 	if m.config.EncryptionEnabled() {
 		// Decrypt the payload
 		plain, err := decryptPayload(m.config.Keyring.GetKeys(), buf, nil)
@@ -341,6 +343,7 @@ func (m *Memberlist) ingestPacket(buf []byte, from net.Addr, timestamp time.Time
 	}
 
 	// See if there's a checksum included to verify the contents of the message
+	// checksum,关键数据的数据完整性检查
 	if len(buf) >= 5 && messageType(buf[0]) == hasCrcMsg {
 		crc := crc32.ChecksumIEEE(buf[5:])
 		expected := binary.BigEndian.Uint32(buf[1:5])
@@ -360,10 +363,12 @@ func (m *Memberlist) handleCommand(buf []byte, from net.Addr, timestamp time.Tim
 		return
 	}
 	// Decode the message type
+	// 第一个字节标识消息类型
 	msgType := messageType(buf[0])
 	buf = buf[1:]
 
 	// Switch on the msgType
+	// 处理各类消息类型
 	switch msgType {
 	case compoundMsg:
 		m.handleCompound(buf, from, timestamp)
@@ -394,6 +399,7 @@ func (m *Memberlist) handleCommand(buf []byte, from net.Addr, timestamp time.Tim
 
 		// Check for overflow and append if not full
 		m.msgQueueLock.Lock()
+		// handoff 传递
 		if queue.Len() >= m.config.HandoffQueueDepth {
 			m.logger.Printf("[WARN] memberlist: handler queue full, dropping message (%d) %s", msgType, LogAddress(from))
 		} else {
@@ -401,6 +407,7 @@ func (m *Memberlist) handleCommand(buf []byte, from net.Addr, timestamp time.Tim
 		}
 		m.msgQueueLock.Unlock()
 
+		// pending 待定的
 		// Notify of pending message
 		select {
 		case m.handoffCh <- struct{}{}:
@@ -687,6 +694,7 @@ func (m *Memberlist) handleDead(buf []byte, from net.Addr) {
 }
 
 // handleUser is used to notify channels of incoming user data
+// 用户自定数据，如果delegate非空,则回调delegate
 func (m *Memberlist) handleUser(buf []byte, from net.Addr) {
 	d := m.config.Delegate
 	if d != nil {

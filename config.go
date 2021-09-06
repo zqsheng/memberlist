@@ -19,6 +19,7 @@ type Config struct {
 	// Transport is a hook for providing custom code to communicate with
 	// other nodes. If this is left nil, then memberlist will by default
 	// make a NetTransport using BindAddr and BindPort from this structure.
+	// hook,网络通信接口的用户代码接入点
 	Transport Transport
 
 	// Configuration related to what address to bind to and ports to
@@ -36,6 +37,7 @@ type Config struct {
 	// ProtocolVersion is the configured protocol version that we
 	// will _speak_. This must be between ProtocolVersionMin and
 	// ProtocolVersionMax.
+	// 内部协议版本
 	ProtocolVersion uint8
 
 	// TCPTimeout is the timeout for establishing a stream connection with
@@ -50,6 +52,7 @@ type Config struct {
 	// waits for an ack from any single indirect node, so increasing this
 	// number will increase the likelihood that an indirect probe will succeed
 	// at the expense of bandwidth.
+	// 间接检查节点数量
 	IndirectChecks int
 
 	// RetransmitMult is the multiplier for the number of retransmissions

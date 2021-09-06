@@ -141,6 +141,7 @@ func newMemberlist(conf *Config) (*Memberlist, error) {
 		}
 
 		// See comment below for details about the retry in here.
+		// 如果端口绑定失败，允许进行重试
 		makeNetRetry := func(limit int) (*NetTransport, error) {
 			var err error
 			for try := 0; try < limit; try++ {
@@ -213,6 +214,7 @@ func newMemberlist(conf *Config) (*Memberlist, error) {
 		return nil, err
 	}
 
+	// 进入for-select chan,消费并处理
 	go m.streamListen()
 	go m.packetListen()
 	go m.packetHandler()
